@@ -1,12 +1,11 @@
 /*
-This example program provides a trivial server program that listens for TCP
-connections on port 9995.  When they arrive, it writes a short message to
-each client connection, and closes each connection once it is flushed.
+  This example program provides a trivial server program that listens for TCP
+  connections on port 9995.  When they arrive, it writes a short message to
+  each client connection, and closes each connection once it is flushed.
 
-Where possible, it exits cleanly in response to a SIGINT (ctrl-c).
+  Where possible, it exits cleanly in response to a SIGINT (ctrl-c).
 */
 
-#include "stdafx.h"
 
 #include <string.h>
 #include <errno.h>
@@ -26,16 +25,12 @@ Where possible, it exits cleanly in response to a SIGINT (ctrl-c).
 #include <event2/util.h>
 #include <event2/event.h>
 
-#include <WinSock2.h>
-
-#pragma comment(lib,"ws2_32.lib")
-
-static const char MESSAGE[] = "Welcome to server!\n";
+static const char MESSAGE[] = "Hello, World!\n";
 
 static const int PORT = 9995;
 
 static void listener_cb(struct evconnlistener *, evutil_socket_t,
-struct sockaddr *, int socklen, void *);
+    struct sockaddr *, int socklen, void *);
 static void conn_writecb(struct bufferevent *, void *);
 static void conn_eventcb(struct bufferevent *, short, void *);
 static void signal_cb(evutil_socket_t, short, void *);
@@ -64,9 +59,9 @@ main(int argc, char **argv)
 	sin.sin_port = htons(PORT);
 
 	listener = evconnlistener_new_bind(base, listener_cb, (void *)base,
-		LEV_OPT_REUSEABLE | LEV_OPT_CLOSE_ON_FREE, -1,
-		(struct sockaddr*)&sin,
-		sizeof(sin));
+	    LEV_OPT_REUSEABLE|LEV_OPT_CLOSE_ON_FREE, -1,
+	    (struct sockaddr*)&sin,
+	    sizeof(sin));
 
 	if (!listener) {
 		fprintf(stderr, "Could not create a listener!\n");
@@ -92,9 +87,9 @@ main(int argc, char **argv)
 
 static void
 listener_cb(struct evconnlistener *listener, evutil_socket_t fd,
-struct sockaddr *sa, int socklen, void *user_data)
+    struct sockaddr *sa, int socklen, void *user_data)
 {
-	struct event_base *base = (struct event_base*)user_data;
+	struct event_base *base = user_data;
 	struct bufferevent *bev;
 
 	bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
@@ -125,20 +120,19 @@ conn_eventcb(struct bufferevent *bev, short events, void *user_data)
 {
 	if (events & BEV_EVENT_EOF) {
 		printf("Connection closed.\n");
-	}
-	else if (events & BEV_EVENT_ERROR) {
+	} else if (events & BEV_EVENT_ERROR) {
 		printf("Got an error on the connection: %s\n",
-			strerror(errno));/*XXX win32*/
+		    strerror(errno));/*XXX win32*/
 	}
 	/* None of the other events can happen here, since we haven't enabled
-	* timeouts */
+	 * timeouts */
 	bufferevent_free(bev);
 }
 
 static void
 signal_cb(evutil_socket_t sig, short events, void *user_data)
 {
-	struct event_base *base = (struct event_base*)user_data;
+	struct event_base *base = user_data;
 	struct timeval delay = { 2, 0 };
 
 	printf("Caught an interrupt signal; exiting cleanly in two seconds.\n");
